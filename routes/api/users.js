@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const key = require("../../config/keys");
 const passport = require("passport");
 const validateRegisterInput = require("../../validation/register");
+const validateLoginInput = require("../../validation/login");
 
 // Load user model
 const User = require("../../models/User");
@@ -21,16 +22,17 @@ router.get("/test", (req, res) => res.json({ msg: "users works" }));
 // @access Public
 
 router.post("/register", (req, res) => {
-  const { errors, isvalid } = validateRegisterInput(req.body);
+  const { errors, isValid } = validateRegisterInput(req.body);
 
   // check validation
-  if (!isvalid) {
+  if (!isValid) {
     return res.status(400).json(errors);
   }
 
   User.findOne({ email: req.body.email }).then(user => {
     if (user) {
-      return res.status(400).json({ email: "Email already exists" });
+      errors.email = "Email already exists";
+      return res.status(400).json(errors);
     }
     const avatar = gravatar.url(req.body.email, {
       s: "200", //size
@@ -65,6 +67,11 @@ router.post("/register", (req, res) => {
 // @desc login users / Returning JWT
 // @access Public
 router.post("/login", (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body);
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   const email = req.body.email;
   const password = req.body.password;
 
@@ -72,7 +79,8 @@ router.post("/login", (req, res) => {
   User.findOne({ email }).then(user => {
     // cheack user
     if (!user) {
-      return res.status(404).json({ email: "email not found" });
+      errors.email = "Email not found";
+      return res.status(404).json(errors);
     }
     // check password
     bcrypt.compare(password, user.password).then(isMatch => {
@@ -96,7 +104,10 @@ router.post("/login", (req, res) => {
             });
           }
         );
-      } else [res.status(400).json({ password: "Password Incorrect" })];
+      } else {
+        errors.password = "Password Incorrect";
+        return res.status(400).json(errors);
+      }
     });
   });
 });

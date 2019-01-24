@@ -1,7 +1,7 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const bodyParser = require("body-parser");
-const passport = require("passport");
+const mongoose = require("mongoose"); //ORM for mongodb
+const bodyParser = require("body-parser"); //in order ot read the data in body of the post request
+const passport = require("passport"); //to send the token for the user validation
 
 // our routes
 const users = require("./routes/api/users");
